@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../data/data.dart';
@@ -13,8 +14,12 @@ class AddExpense extends StatefulWidget {
 }
 
 class _AddExpenseState extends State<AddExpense> {
+  int? _selectedCategoryId;
   @override
   Widget build(BuildContext context) {
+    if (kDebugMode) {
+      print(_selectedCategoryId);
+    }
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.background,
@@ -117,7 +122,7 @@ class _AddExpenseState extends State<AddExpense> {
                           tileColor: Colors.white,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20)),
-                          onTap: () {
+                          onTap:() {
                             _chooseAnAction(index, context);
                           },
                           dense: false,
@@ -189,59 +194,68 @@ class _AddExpenseState extends State<AddExpense> {
       ),
     );
   }
-}
+  void _chooseAnAction(int index, BuildContext context) {
+    switch (index) {
+      case 0:
+        {
+          _showSelectableDialog(context);
+        }
+      case 1:
+        {
 
-void _chooseAnAction(int index, BuildContext context) {
-  switch (index) {
-    case 0:
-      {
-        _showSelectableDialog(context);
-      }
-    case 1:
-      {}
-    case 2:
-      {}
+        }
+      case 2:
+        {
+
+        }
+    }
+  }
+
+  Future<void> _showSelectableDialog(BuildContext context) async {
+    final int? selectedCatId =await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Select Category'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: mainData.length, // Set the number of items in your list
+              itemBuilder: (BuildContext context, int index) {
+                return ListTile(
+                  title: Text(mainData[index]['category']),
+                  leading: Stack(alignment: Alignment.center, children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: mainData[index]['color']),
+                    ),
+                    mainData[index]['icon']
+                  ]),
+                  onTap: () {
+                    if (kDebugMode) {
+                      print(_selectedCategoryId);
+                    }
+                    Navigator.of(context)
+                        .pop(index); // Return selected index when tapped
+                  },
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+    if (selectedCatId != null) {
+      setState(() {
+        _selectedCategoryId =selectedCatId;
+
+      });
+    }
   }
 }
 
-int? _showSelectableDialog(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text('Select Category'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: mainData.length, // Set the number of items in your list
-            itemBuilder: (BuildContext context, int index) {
-              return ListTile(
-                title: Text(mainData[index]['category']),
-                leading: Stack(alignment: Alignment.center, children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: mainData[index]['color']),
-                  ),
-                  mainData[index]['icon']
-                ]),
-                onTap: () {
-                  Navigator.of(context)
-                      .pop(index); // Return selected index when tapped
-                },
-              );
-            },
-          ),
-        ),
-      );
-    },
-  ).then((selectedIndex) {
-    if (selectedIndex != null) {
-      return selectedIndex;
-    }
-  });
-  return null;
-}
+
